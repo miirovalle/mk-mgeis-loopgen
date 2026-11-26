@@ -1,0 +1,81 @@
+name: iOS unsigned IPA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build AUv3 app and package .ipa
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Archive (no code signing)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project LoopGen.xcodeproj \
+            -scheme LoopGen \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/LoopGen.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            | tail -n 80
+
+      - name: Verify app bundle contains the AUv3 extension
+        working-directory: ios
+        run: |
+          set -e
+          APP="build/LoopGen.xcarchive/Products/Applications/LoopGen.app"
+          test -d "$APP" || { echo "missing $APP"; exit 1; }
+          test -d "$APP/PlugIns/LoopGenAU.appex" || { echo "AUv3 extension not embedded"; ls -R "$APP"; exit 1; }
+          /usr/libexec/PlistBuddy -c "Print :NSExtension:NSExtensionAttributes:AudioComponents:0:type" \
+            "$APP/PlugIns/LoopGenAU.appex/Info.plist"
+          echo "embedded AUv3 OK"
+
+      - name: Package unsigned IPA
+        working-directory: ios
+        run: |
+          set -e
+          APP="build/LoopGen.xcarchive/Products/Applications/LoopGen.app"
+          rm -rf build/ipa
+          mkdir -p build/ipa/Payload
+          cp -R "$APP" build/ipa/Payload/
+          cd build/ipa
+          zip -qry ../LoopGen-unsigned.ipa Payload
+          cd ..
+          ls -lh LoopGen-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LoopGen-unsigned-ipa
+          path: ios/build/LoopGen-unsigned.ipa
+          if-no-files-found: error

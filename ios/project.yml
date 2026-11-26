@@ -1,0 +1,73 @@
+name: LoopGen
+options:
+  bundleIdPrefix: com.miirovalle
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    MARKETING_VERSION: "3.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+targets:
+  LoopGen:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/App
+      - path: Sources/Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.miirovalle.loopgen
+        PRODUCT_NAME: LoopGen
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_CFBundleDisplayName: LoopGen
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        TARGETED_DEVICE_FAMILY: "1,2"
+    dependencies:
+      - target: LoopGenAU
+        embed: true
+    scheme:
+      testTargets: []
+
+  LoopGenAU:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Sources/AUv3
+      - path: Sources/Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.miirovalle.loopgen.au
+        PRODUCT_NAME: LoopGenAU
+        GENERATE_INFOPLIST_FILE: YES
+        APPLICATION_EXTENSION_API_ONLY: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+    info:
+      path: Resources/AUv3-Info.plist
+      properties:
+        CFBundleDisplayName: LoopGen
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.AudioUnit-UI
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).LoopGenViewController
+          NSExtensionAttributes:
+            AudioComponents:
+              - name: miiro:LoopGen
+                description: In-key loop generator
+                factoryFunction: $(PRODUCT_MODULE_NAME).LoopGenAudioUnitFactory
+                manufacturer: miiro
+                type: aumi
+                subtype: lpg3
+                version: 3
+                sandboxSafe: true
+                tags:
+                  - Generator

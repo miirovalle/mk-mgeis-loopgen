@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local loop library and generated output (large, not part of the code)
+midi/
+midi_4bar/
+generated/
+
+# iOS
+ios/build/
+ios/LoopGen.xcodeproj/
+ios/*.xcworkspace/
+DerivedData/
+*.xcuserstate
+*.ipa
+
+# OS
+.DS_Store
+Thumbs.db
