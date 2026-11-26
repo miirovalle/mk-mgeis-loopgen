@@ -15,12 +15,12 @@ final class LoopTransport: ObservableObject {
     @Published var networkEnabled = false {
         didSet { midi.networkEnabled = networkEnabled }
     }
-    @Published var networkName = "LoopGen" {
-        didSet { midi.networkName = networkName }
-    }
     @Published var networkPolicy: MIDINetworkPolicy = .anyone {
         didSet { midi.networkPolicy = networkPolicy.policy }
     }
+    /// Advertised by iOS for the network session (read-only).
+    @Published private(set) var networkSessionName = ""
+    @Published private(set) var networkSessionPort = 0
 
     var spec = LoopSpec()
 
@@ -37,6 +37,8 @@ final class LoopTransport: ObservableObject {
         midi.onDestinationsChanged = { [weak self] in
             guard let self = self else { return }
             self.targets = self.midi.targets
+            self.networkSessionName = self.midi.sessionName
+            self.networkSessionPort = self.midi.sessionPort
             if !self.targets.contains(where: { $0.id == self.selectedTargetID }) {
                 self.selectedTargetID = self.targets.first?.id ?? ""
             }
@@ -46,6 +48,8 @@ final class LoopTransport: ObservableObject {
         }
         midi.start()
         targets = midi.targets
+        networkSessionName = midi.sessionName
+        networkSessionPort = midi.sessionPort
     }
 
     deinit {

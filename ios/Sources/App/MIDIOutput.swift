@@ -36,12 +36,14 @@ final class MIDIOutput {
     var networkEnabled = false {
         didSet { applyNetworkSettings() }
     }
-    var networkName = "LoopGen" {
-        didSet { applyNetworkSettings() }
-    }
     var networkPolicy: MIDINetworkConnectionPolicy = .anyone {
         didSet { applyNetworkSettings() }
     }
+
+    /// The name and port iOS advertises for the network session. Both are
+    /// read-only in MIDINetworkSession, so they are shown rather than set.
+    var sessionName: String { MIDINetworkSession.default().networkName }
+    var sessionPort: Int { MIDINetworkSession.default().networkPort }
 
     deinit {
         stop()
@@ -98,7 +100,6 @@ final class MIDIOutput {
 
     private func applyNetworkSettings() {
         let session = MIDINetworkSession.default()
-        session.networkName = networkName
         session.connectionPolicy = networkPolicy
         session.isEnabled = networkEnabled && isStarted
         onDestinationsChanged?()
@@ -116,7 +117,8 @@ final class MIDIOutput {
 
         let networkDestination = MIDINetworkSession.default().destinationEndpoint()
         if networkEnabled, networkDestination != 0 {
-            list.append(MIDIOutTarget(id: "network", name: "RTP-MIDI: \(networkName)",
+            list.append(MIDIOutTarget(id: "network",
+                                      name: "RTP-MIDI: \(sessionName) (\(sessionPort))",
                                       kind: .network, endpoint: networkDestination))
         }
 
@@ -133,8 +135,8 @@ final class MIDIOutput {
     static func displayName(of endpoint: MIDIEndpointRef) -> String {
         var value: Unmanaged<CFString>?
         if MIDIObjectGetStringProperty(endpoint, kMIDIPropertyDisplayName, &value) == noErr,
-           let name = value?.takeRetainedValue() as String? {
-            return name
+           let name = value?.takeRetainedValue() {
+            return name as String
         }
         return "MIDI destination"
     }

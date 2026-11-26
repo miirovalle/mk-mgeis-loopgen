@@ -77,16 +77,18 @@ struct ContentView: View {
 
                 Section("RTP-MIDI (network)") {
                     Toggle("Enable network session", isOn: $transport.networkEnabled)
-                    TextField("Session name", text: $transport.networkName)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
                     Picker("Allow", selection: $transport.networkPolicy) {
                         ForEach(MIDINetworkPolicy.allCases) { policy in
                             Text(policy.name).tag(policy)
                         }
                     }
+                    LabeledContent("Session",
+                                   value: transport.networkSessionName.isEmpty
+                                   ? "-" : transport.networkSessionName)
+                    LabeledContent("Port", value: "\(transport.networkSessionPort)")
                     Text("Connect from Audio MIDI Setup (macOS) or another MIDI "
-                         + "Network session on the same network.")
+                         + "Network session on the same network. The session name "
+                         + "comes from the device name.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
