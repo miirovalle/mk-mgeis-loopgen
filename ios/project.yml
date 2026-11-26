@@ -27,12 +27,20 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.miirovalle.loopgen
         PRODUCT_NAME: LoopGen
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_CFBundleDisplayName: LoopGen
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         TARGETED_DEVICE_FAMILY: "1,2"
+    info:
+      path: Resources/App-Info.plist
+      properties:
+        CFBundleDisplayName: LoopGen
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSLocalNetworkUsageDescription: >-
+          LoopGen uses the local network to send and receive RTP-MIDI.
+        NSBonjourServices:
+          - _apple-midi._udp
     dependencies:
       - target: LoopGenAU
         embed: true
