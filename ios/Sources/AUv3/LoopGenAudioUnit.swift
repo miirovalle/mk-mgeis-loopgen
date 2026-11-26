@@ -33,44 +33,47 @@ public final class LoopGenAudioUnit: AUAudioUnit {
                          options: AudioComponentInstantiationOptions = []) throws {
         try super.init(componentDescription: componentDescription,
                        options: options)
-        _inputBusses = AUAudioUnitBusArray(audioUnit: self, count: 0, busType: .input)
-        _outputBusses = AUAudioUnitBusArray(audioUnit: self, count: 0, busType: .output)
+        _inputBusses = AUAudioUnitBusArray(audioUnit: self, busType: .input)
+        _outputBusses = AUAudioUnitBusArray(audioUnit: self, busType: .output)
         maximumFramesToRender = 4096
         _parameterTree = makeParameterTree()
     }
 
     // MARK: - Parameters
 
+    /// Writable + readable (kAudioUnitParameterFlag_IsWritable | IsReadable).
+    private static let writableFlags = AudioUnitParameterOptions(rawValue: 3)
+
     private func makeParameterTree() -> AUParameterTree {
         let root = AUParameterTree.createParameter(
             withIdentifier: "root", name: "Root", address: Address.root,
             min: 0, max: 11, unit: .indexed, unitName: nil,
-            flags: [.flagIsWritable], valueStrings: LoopGenerator.pitchNames,
+            flags: Self.writableFlags, valueStrings: LoopGenerator.pitchNames,
             dependentParameters: nil)
         let mode = AUParameterTree.createParameter(
             withIdentifier: "mode", name: "Scale", address: Address.mode,
             min: 0, max: 1, unit: .indexed, unitName: nil,
-            flags: [.flagIsWritable], valueStrings: ["Minor", "Major"],
+            flags: Self.writableFlags, valueStrings: ["Minor", "Major"],
             dependentParameters: nil)
         let bars = AUParameterTree.createParameter(
             withIdentifier: "bars", name: "Bars", address: Address.bars,
             min: 4, max: 16, unit: .indexed, unitName: nil,
-            flags: [.flagIsWritable], valueStrings: ["4", "8", "16"],
+            flags: Self.writableFlags, valueStrings: ["4", "8", "16"],
             dependentParameters: nil)
         let seed = AUParameterTree.createParameter(
             withIdentifier: "seed", name: "Seed", address: Address.seed,
             min: 0, max: 9999, unit: .indexed, unitName: nil,
-            flags: [.flagIsWritable], valueStrings: nil, dependentParameters: nil)
+            flags: Self.writableFlags, valueStrings: nil, dependentParameters: nil)
 
         seed.value = 1
         bars.value = 16
 
         let tree = AUParameterTree.createTree(withChildren: [root, mode, bars, seed])
-        tree.implementorValueObserver = { [weak self] parameter, value in
-            self?.applyParameter(address: parameter.address, value: value)
+        tree.implementorValueObserver = { (parameter: AUParameter, value: AUValue) in
+            self.applyParameter(address: parameter.address, value: value)
         }
-        tree.implementorValueProvider = { [weak self] parameter in
-            self?.parameterValue(for: parameter.address) ?? 0
+        tree.implementorValueProvider = { (parameter: AUParameter) -> AUValue in
+            self.parameterValue(for: parameter.address)
         }
         return tree
     }
@@ -197,5 +200,9 @@ public final class LoopGenAudioUnitFactory: NSObject, AUAudioUnitFactory {
     public func createAudioUnit(with componentDescription: AudioComponentDescription)
         throws -> AUAudioUnit {
         return try LoopGenAudioUnit(componentDescription: componentDescription)
+    }
+
+    public func beginRequest(with context: NSExtensionContext) {
+        // AUv3 hosts do not use NSExtension requests for audio units.
     }
 }
