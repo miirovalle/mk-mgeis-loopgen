@@ -166,7 +166,7 @@ enum MIDINetworkPolicy: Int, CaseIterable, Identifiable {
     var policy: MIDINetworkConnectionPolicy {
         switch self {
         case .anyone: return .anyone
-        case .contacts: return .hostsInContactsList
+        case .contacts: return .hostsInContactList
         case .noOne: return .noOne
         }
     }

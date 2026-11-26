@@ -98,7 +98,7 @@ final class MIDIOutput {
 
     private func applyNetworkSettings() {
         let session = MIDINetworkSession.default()
-        session.localName = networkName
+        session.networkName = networkName
         session.connectionPolicy = networkPolicy
         session.isEnabled = networkEnabled && isStarted
         onDestinationsChanged?()
