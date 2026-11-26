@@ -32,6 +32,8 @@ targets:
       path: Resources/App-Info.plist
       properties:
         CFBundleDisplayName: LoopGen
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

@@ -73,7 +73,15 @@ break, and is deterministic per seed.
   through `midiOutputEventBlock`, so it plays in sync in AUM, Drambo, AUM-style
   hosts, GarageBand, etc. Parameters: Root, Scale, Bars, Seed.
 * **`LoopGen`** — host app: pick key/scale/bars/seed, see the progression, render
-  and share a `.mid` file.
+  and share a `.mid` file, and play the loop out as MIDI:
+  * **MIDI out** — send to a virtual source (`LoopGen Out`, visible to other apps),
+    an external destination, or the network session.
+  * **RTP-MIDI** — `MIDINetworkSession` with enable toggle and connection policy
+    (Anyone / Contacts only / No one). Connect from Audio MIDI Setup on macOS.
+    The advertised session name and port are read-only in `MIDINetworkSession`,
+    so the app displays them instead of editing them.
+  * **MIDI thru** — incoming MIDI from all connected sources is forwarded to the
+    output unchanged, alongside the generated notes. Sends all-notes-off on stop.
 
 ### Build the unsigned IPA
 
