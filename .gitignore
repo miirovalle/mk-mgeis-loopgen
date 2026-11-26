@@ -20,3 +20,6 @@ DerivedData/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local build output (IPAs are produced by CI, not committed)
+build/
